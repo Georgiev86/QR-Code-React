@@ -1,0 +1,70 @@
+import React, { useState } from 'react';
+import { saveAs } from 'file-saver';
+import { QRCodeCanvas } from 'qrcode.react';
+import { PDFDocument, rgb } from 'pdf-lib';
+import { toDataURL } from 'qrcode';
+
+const styles = {
+  container: {
+     color: 'green',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: '100vh',
+  },
+  input: {
+    marginBottom: 20,
+  },
+  qrCode: {
+    width: 250,
+    height: 250  
+  }
+};
+
+function App() {
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [qrCodeUrl, setQrCodeUrl] = useState('');
+
+  const handleFileChange = (event) => {
+    setSelectedFile(event.target.files[0]);
+  };
+
+  const handleGenerateQRCode = async () => {
+    if (!selectedFile) return; // Handle no file selected case
+
+    // Create a new PDF document
+    const pdfDoc = await PDFDocument.create();
+    const page = pdfDoc.addPage([600, 400]);
+    
+    
+    page.drawText('This is a sample PDF generated from your upload.', {
+      x: 50,
+      y: 350,
+      size: 20,
+      color: rgb(0, 0, 0),
+    });
+    
+
+    // Serialize the PDF document to bytes (a Uint8Array)
+    const pdfBytes = await pdfDoc.save();
+
+    // Create a blob from the PDF bytes
+    const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+    saveAs(blob, 'generated-pdf.pdf'); // Download the generated PDF
+
+    // Generate QR code URL pointing to the downloaded PDF
+    setQrCodeUrl(URL.createObjectURL(blob));
+  };
+
+  return (
+    <div className="App" style={styles.container}>
+      <h1>PDF to QR Code Generator</h1>
+      <input type="file" accept=".pdf" onChange={handleFileChange} style={styles.input} />
+      <button onClick={handleGenerateQRCode}>Generate QR Code</button>
+      {qrCodeUrl && <QRCodeCanvas value={qrCodeUrl} size={250} style={styles.qrCode} />}
+    </div>
+  );
+}
+
+export default App;
