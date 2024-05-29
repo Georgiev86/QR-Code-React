@@ -1,3 +1,4 @@
+// npm expo start
 import axios from "axios";
 import { Document, Page } from '@react-pdf/renderer';
 import { createContext, useState } from "react";
